@@ -1,33 +1,44 @@
 #include <stdio.h>
-#include "portpeek/cli.h"
+
+#include <portpeek/cli.h>
 
 #define PORTPEEK_VERSION "0.1.0"
 
-void execute_command(Command command) {
+static void print_help(void)
+{
+    puts("Portpeek - Process and Network Intelligence");
+    puts("Usage: portpeek [--json] [--no-color] [--verbose] COMMAND");
+    puts("       portpeek [--json] [--no-color] [--verbose] PORT");
+    puts("Commands: ports, inspect PID [--connections], connections, tree PID");
+}
 
-    switch (command.type) {
+int execute_command(const Command *command)
+{
+    switch (command->type) {
         case COMMAND_HELP:
-            printf("Portpeek - Process and Network Intelligence\n");
+            print_help();
             break;
-
         case COMMAND_VERSION:
-            printf("Portpeek v%s\n", PORTPEEK_VERSION);
+            puts("Portpeek v" PORTPEEK_VERSION);
             break;
-
         case COMMAND_PORTS:
-            printf("Listing ports...\n");
+            puts("Listing ports...");
             break;
-
         case COMMAND_INSPECT:
-            printf("Inspecting PID: %s\n", command.argument);
+            printf("Inspecting PID: %ld\n", command->numeric_argument);
+            if (command->include_connections) {
+                puts("Including process connections...");
+            }
             break;
-
         case COMMAND_PORT_LOOKUP:
-            printf("Investigating port: %s\n", command.argument);
+            printf("Investigating port: %ld\n", command->numeric_argument);
             break;
-
-        case COMMAND_INVALID:
-            fprintf(stderr, "Invalid command. Use --help.\n");
+        case COMMAND_CONNECTIONS:
+            puts("Listing connections...");
+            break;
+        case COMMAND_TREE:
+            printf("Displaying process tree for PID: %ld\n", command->numeric_argument);
             break;
     }
+    return PORTPEEK_EXIT_SUCCESS;
 }
